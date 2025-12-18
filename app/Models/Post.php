@@ -2,9 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory; // <--- This was missing
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $title
+ * @property \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder|Post query()
+ */
 class Post extends Model
 {
     use HasFactory;
@@ -29,11 +36,5 @@ class Post extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    // A Post has many Comments
-    public function comments()
-    {
-        return $this->hasMany(Comment::class)->latest(); // Show newest comments first
     }
 }

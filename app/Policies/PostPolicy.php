@@ -46,8 +46,8 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        // Rule: You can only delete if you are the owner
-        return $user->id === $post->user_id;
+        // Allow if you are the Owner OR if you are an Admin
+        return $user->id === $post->user_id || $user->is_admin;
     }
 
     /**
