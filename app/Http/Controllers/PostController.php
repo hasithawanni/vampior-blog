@@ -15,14 +15,15 @@ class PostController extends Controller
     public function index(Request $request)
     {
         // Start a query to get posts with their authors and categories
-        $query = Post::with(['user', 'category'])->latest();
-
+        $query = Post::with(['user', 'category'])
+            ->where('status', 'published')
+            ->latest();
         // Search Logic: If the user typed something...
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('content', 'like', "%{$search}%");
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('content', 'like', '%' . $searchTerm . '%');
             });
         }
 
@@ -72,7 +73,11 @@ class PostController extends Controller
     // 3. Show a Single Post
     public function show($slug)
     {
-        $post = Post::where('slug', $slug)->firstOrFail();
+        // We find the post by slug, and we EAGER LOAD the comments and their authors
+        $post = \App\Models\Post::where('slug', $slug)
+            ->with(['user', 'category', 'comments.user'])
+            ->firstOrFail();
+
         return view('posts.show', compact('post'));
     }
 

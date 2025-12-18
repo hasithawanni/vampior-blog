@@ -1,43 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Dashboard') }}
+                Category: <span class="text-blue-500">{{ $category->name }}</span>
             </h2>
-
-            <form action="{{ route('dashboard') }}" method="GET" class="flex-grow max-w-lg w-full">
-                <div class="relative">
-                    <input type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="Search posts..."
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 focus:ring-blue-500 pl-4 pr-10 py-2 shadow-sm">
-
-                    <button type="submit" class="absolute right-2 top-2 text-gray-400 hover:text-blue-500">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </button>
-                </div>
-            </form>
-
-            @auth
-            <a href="{{ route('posts.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-md whitespace-nowrap">
-                + New Post
+            <a href="{{ route('dashboard') }}" class="text-sm text-gray-500 hover:text-blue-500 transition">
+                &larr; Back to all posts
             </a>
-            @endauth
         </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <span class="block sm:inline">{{ session('success') }}</span>
+            @if($posts->isEmpty())
+            <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-lg shadow">
+                <p class="text-gray-500 dark:text-gray-400 text-lg">No posts found in this category yet.</p>
             </div>
-            @endif
-
+            @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($posts as $post)
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
@@ -54,17 +34,9 @@
 
                     <div class="p-6 flex-grow flex flex-col">
                         <div class="mb-3">
-                            @if($post->category)
-                            <a href="{{ route('categories.show', $post->category->slug) }}" class="inline-block hover:opacity-75 transition">
-                                <span class="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
-                                    {{ $post->category->name }}
-                                </span>
-                            </a>
-                            @else
-                            <span class="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
-                                Uncategorized
+                            <span class="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
+                                {{ $category->name }}
                             </span>
-                            @endif
                         </div>
 
                         <a href="{{ route('posts.show', $post->slug) }}" class="block mb-2 group">
@@ -78,7 +50,6 @@
                         </p>
 
                         <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-
                             <div class="flex items-center">
                                 @if($post->user->avatar)
                                 <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="{{ $post->user->name }}" class="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300 dark:border-gray-600">
@@ -98,43 +69,31 @@
                                 @auth
                                 @if(auth()->id() === $post->user_id || auth()->user()->is_admin)
                                 <div class="flex items-center gap-2 pl-3 border-l border-gray-300 dark:border-gray-600">
-
                                     <a href="{{ route('posts.edit', $post) }}" class="text-yellow-500 hover:text-yellow-600 transition" title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
-
-                                    <form action="{{ route('posts.destroy', $post) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');" class="flex m-0 p-0">
-                                        @csrf
-                                        @method('DELETE')
+                                    <form action="{{ route('posts.destroy', $post) }}" method="POST" onsubmit="return confirm('Are you sure?');" class="flex m-0 p-0">
+                                        @csrf @method('DELETE')
                                         <button type="submit" class="text-red-500 hover:text-red-600 transition" title="Delete">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
                                         </button>
                                     </form>
-
                                 </div>
                                 @endif
                                 @endauth
                             </div>
                         </div>
-
                     </div>
                 </div>
                 @endforeach
             </div>
 
-            @if($posts->hasPages())
-            <div class="mt-8 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                {{ $posts->withQueryString()->links() }}
-            </div>
-            @endif
-
-            @if($posts->isEmpty())
-            <div class="text-center py-20">
-                <p class="text-gray-500 dark:text-gray-400">No posts found.</p>
+            <div class="mt-8">
+                {{ $posts->links() }}
             </div>
             @endif
 

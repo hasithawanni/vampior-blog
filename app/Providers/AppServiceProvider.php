@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Share categories with ALL views
+        view()->composer('*', function ($view) {
+            $view->with('allCategories', \App\Models\Category::all());
+        });
     }
 }

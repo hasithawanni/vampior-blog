@@ -37,4 +37,10 @@ class Post extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    // A Post has many Comments
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
 }
