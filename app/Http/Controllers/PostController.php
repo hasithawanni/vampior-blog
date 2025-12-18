@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Gate;
 use App\Models\Post;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -78,6 +79,8 @@ class PostController extends Controller
     // 4. Show the Edit Form
     public function edit(Post $post)
     {
+        Gate::authorize('update', $post);
+
         /** @var \App\Models\User $user */
         $user = Auth::user(); // We tell VS Code: "This is OUR User model"
 
@@ -92,6 +95,8 @@ class PostController extends Controller
     // 5. Update the Post
     public function update(Request $request, Post $post)
     {
+        Gate::authorize('update', $post);
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -125,6 +130,8 @@ class PostController extends Controller
     // 6. Delete the Post
     public function destroy(Post $post)
     {
+        Gate::authorize('delete', $post);
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
