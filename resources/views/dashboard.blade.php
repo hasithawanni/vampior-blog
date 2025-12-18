@@ -69,8 +69,18 @@
                         </p>
 
                         <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                            <span>By {{ $post->user->name }}</span>
-                            <span>{{ $post->created_at->diffForHumans() }}</span>
+                            <div class="flex items-center">
+                                @if($post->user->avatar)
+                                <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="{{ $post->user->name }}" class="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300 dark:border-gray-600">
+                                @else
+                                <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2">
+                                    <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                @endif
+                                <span class="font-medium">{{ $post->user->name }}</span>
+                            </div> <span>{{ $post->created_at->diffForHumans() }}</span>
                         </div>
                     </div>
                 </div>

@@ -26,12 +26,23 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // 1. Fill the basic data (Name, Email, Bio)
         $request->user()->fill($request->validated());
 
+        // 2. Handle Avatar Upload
+        if ($request->hasFile('avatar')) {
+            // Save the file to storage/app/public/avatars
+            $path = $request->file('avatar')->store('avatars', 'public');
+            // Save the path to the database
+            $request->user()->avatar = $path;
+        }
+
+        // 3. Reset email verification if email changed (Standard Breeze logic)
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
+        // 4. Save everything
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

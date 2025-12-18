@@ -19,6 +19,8 @@ class User extends Authenticatable
         'google_id',
         'github_token',
         'google_token',
+        'avatar',
+        'bio',
     ];
 
     protected $hidden = [
