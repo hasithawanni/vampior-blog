@@ -43,4 +43,43 @@ class Post extends Model
     {
         return $this->hasMany(Comment::class)->latest();
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    /**
+     * Relationship: A post has many likes
+     */
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    /**
+     * Check if a specific user has liked this post
+     */
+    public function isLikedBy($user)
+    {
+        if (!$user) return false;
+        return $this->likes()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Relationship: A post has many saves
+     */
+    public function saves()
+    {
+        return $this->hasMany(Save::class);
+    }
+
+    /**
+     * Check if a specific user has saved this post
+     */
+    public function isSavedBy($user)
+    {
+        if (!$user) return false;
+        return $this->saves()->where('user_id', $user->id)->exists();
+    }
 }

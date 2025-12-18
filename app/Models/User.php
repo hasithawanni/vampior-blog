@@ -22,6 +22,8 @@ class User extends Authenticatable
         'avatar',
         'bio',
         'is_admin',
+        'google_id',
+        'google_token',
     ];
 
     protected $hidden = [
@@ -35,5 +37,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function saves()
+    {
+        return $this->hasMany(Save::class);
     }
 }

@@ -11,8 +11,8 @@ class AdminController extends Controller
 {
     public function index()
     {
-        // Check if Admin
-        if (!auth()->user()->is_admin) {
+        // Professional check using Spatie HasRoles trait
+        if (!auth()->user()->hasRole('admin')) {
             abort(403);
         }
 
@@ -23,28 +23,32 @@ class AdminController extends Controller
     }
 
     /**
-     * Requirement: Ability to change user roles
+     * Requirement: Ability to change user roles (Admin, Editor, Reader)
      */
-    public function updateRole(User $user)
+    public function updateRole(Request $request, User $user)
     {
-        // Prevent admin from de-admining themselves (optional safety)
+        // Validate the incoming role from the dropdown
+        $request->validate([
+            'role' => 'required|in:admin,editor,reader'
+        ]);
+
+        // Prevent admin from changing their own role
         if (auth()->id() === $user->id) {
             return back()->with('error', 'You cannot change your own role.');
         }
 
-        $user->update([
-            'is_admin' => !$user->is_admin
-        ]);
+        // Use Spatie's syncRoles to remove old roles and assign the new one
+        $user->syncRoles([$request->role]);
 
-        return back()->with('success', 'User role updated successfully!');
+        return back()->with('success', "User role updated to {$request->role} successfully!");
     }
 
     /**
-     * Requirement: Blog post moderation (approve, reject)
+     * Requirement: Blog post moderation (approve, reject, delete)
      */
     public function updateStatus(Post $post, $status)
     {
-        // Validate that the status is one of your allowed migration values
+        // Allowed statuses based on project requirements
         $allowedStatuses = ['published', 'draft', 'rejected'];
 
         if (in_array($status, $allowedStatuses)) {

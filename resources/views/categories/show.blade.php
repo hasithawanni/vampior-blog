@@ -22,6 +22,7 @@
                 @foreach($posts as $post)
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
 
+                    {{-- Post Image --}}
                     @if($post->image)
                     <img src="{{ asset('storage/' . $post->image) }}"
                         alt="{{ $post->title }}"
@@ -33,22 +34,32 @@
                     @endif
 
                     <div class="p-6 flex-grow flex flex-col">
-                        <div class="mb-3">
-                            <span class="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
+                        {{-- Category and Tags Row --}}
+                        <div class="mb-3 flex flex-wrap items-center gap-2">
+                            <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                                 {{ $category->name }}
                             </span>
+
+                            @foreach($post->tags as $tag)
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
+                                #{{ $tag->name }}
+                            </span>
+                            @endforeach
                         </div>
 
+                        {{-- Post Title --}}
                         <a href="{{ route('posts.show', $post->slug) }}" class="block mb-2 group">
                             <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-400 transition-colors">
                                 {{ $post->title }}
                             </h3>
                         </a>
 
+                        {{-- Clean Post Preview (Strips Trix HTML) --}}
                         <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4 flex-grow">
-                            {{ Str::limit($post->content, 100) }}
+                            {{ Str::limit(strip_tags($post->content), 100) }}
                         </p>
 
+                        {{-- Footer: Author and Actions --}}
                         <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div class="flex items-center">
                                 @if($post->user->avatar)
@@ -66,8 +77,9 @@
                             <div class="flex items-center gap-3">
                                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ $post->created_at->diffForHumans() }}</span>
 
+                                {{-- Role-Based Action Buttons --}}
                                 @auth
-                                @if(auth()->id() === $post->user_id || auth()->user()->is_admin)
+                                @if(auth()->user()->hasRole('admin') || (auth()->user()->hasRole('editor') && auth()->id() === $post->user_id))
                                 <div class="flex items-center gap-2 pl-3 border-l border-gray-300 dark:border-gray-600">
                                     <a href="{{ route('posts.edit', $post) }}" class="text-yellow-500 hover:text-yellow-600 transition" title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,6 +99,7 @@
                                 @endauth
                             </div>
                         </div>
+
                     </div>
                 </div>
                 @endforeach

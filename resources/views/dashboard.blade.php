@@ -21,11 +21,11 @@
                 </div>
             </form>
 
-            @auth
+            @hasanyrole('admin|editor')
             <a href="{{ route('posts.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-md whitespace-nowrap">
                 + New Post
             </a>
-            @endauth
+            @endhasanyrole
         </div>
     </x-slot>
 
@@ -53,18 +53,22 @@
                     @endif
 
                     <div class="p-6 flex-grow flex flex-col">
-                        <div class="mb-3">
+                        {{-- UPDATED: Flex-wrap ensures Category and Tags stay in a neat row --}}
+                        <div class="mb-3 flex flex-wrap items-center gap-2">
                             @if($post->category)
                             <a href="{{ route('categories.show', $post->category->slug) }}" class="inline-block hover:opacity-75 transition">
-                                <span class="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
+                                <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                                     {{ $post->category->name }}
                                 </span>
                             </a>
-                            @else
-                            <span class="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
-                                Uncategorized
-                            </span>
                             @endif
+
+                            {{-- TAGS: Styled as small hashtag badges --}}
+                            @foreach($post->tags as $tag)
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
+                                #{{ $tag->name }}
+                            </span>
+                            @endforeach
                         </div>
 
                         <a href="{{ route('posts.show', $post->slug) }}" class="block mb-2 group">
@@ -73,12 +77,12 @@
                             </h3>
                         </a>
 
+                        {{-- UPDATED: strip_tags removes the Trix <div> and <strong> tags from preview --}}
                         <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4 flex-grow">
-                            {{ Str::limit($post->content, 100) }}
+                            {{ Str::limit(strip_tags($post->content), 100) }}
                         </p>
 
                         <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-
                             <div class="flex items-center">
                                 @if($post->user->avatar)
                                 <img src="{{ asset('storage/' . $post->user->avatar) }}" alt="{{ $post->user->name }}" class="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300 dark:border-gray-600">
@@ -96,9 +100,8 @@
                                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ $post->created_at->diffForHumans() }}</span>
 
                                 @auth
-                                @if(auth()->id() === $post->user_id || auth()->user()->is_admin)
+                                @if(auth()->user()->hasRole('admin') || (auth()->user()->hasRole('editor') && auth()->id() === $post->user_id))
                                 <div class="flex items-center gap-2 pl-3 border-l border-gray-300 dark:border-gray-600">
-
                                     <a href="{{ route('posts.edit', $post) }}" class="text-yellow-500 hover:text-yellow-600 transition" title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -114,7 +117,6 @@
                                             </svg>
                                         </button>
                                     </form>
-
                                 </div>
                                 @endif
                                 @endauth

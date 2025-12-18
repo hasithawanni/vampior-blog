@@ -25,16 +25,15 @@ class SocialAuthController extends Controller
 
             // Find user by Email OR Social ID
             $user = User::where('email', $socialUser->getEmail())
-                        ->orWhere($provider . '_id', $socialUser->getId())
-                        ->first();
+                ->orWhere($provider . '_id', $socialUser->getId())
+                ->first();
 
             if ($user) {
-                // Update existing user tokens
+                // Update existing user data
                 $user->update([
                     $provider . '_id' => $socialUser->getId(),
                     $provider . '_token' => $socialUser->token,
                 ]);
-                Auth::login($user);
             } else {
                 // Create new user
                 $user = User::create([
@@ -44,11 +43,14 @@ class SocialAuthController extends Controller
                     $provider . '_id' => $socialUser->getId(),
                     $provider . '_token' => $socialUser->token,
                 ]);
-                Auth::login($user);
+
+                // 🛡️ ROLE ASSIGNMENT: New social users must be Readers
+                $user->assignRole('reader');
             }
 
-            return redirect('/dashboard');
+            Auth::login($user);
 
+            return redirect('/dashboard')->with('success', 'Successfully logged in with ' . ucfirst($provider));
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Login failed: ' . $e->getMessage());
         }

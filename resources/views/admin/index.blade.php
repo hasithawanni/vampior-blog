@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-red-600 dark:text-red-400 leading-tight">
+        <h2 class="font-semibold text-xl text-red-600 dark:text-red-400 leading-tight flex items-center">
             Admin Dashboard 🛡️
         </h2>
     </x-slot>
@@ -15,8 +15,8 @@
                         <tr class="text-xs uppercase text-gray-500 border-b border-gray-700">
                             <th class="py-3">Name</th>
                             <th>Email</th>
-                            <th>Role</th>
-                            <th class="text-right">Action</th>
+                            <th>Current Role</th>
+                            <th class="text-right">Assign New Role</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,16 +25,25 @@
                             <td class="py-4 font-medium">{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
                             <td>
-                                <span class="px-2 py-1 rounded text-xs {{ $user->is_admin ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-blue-900/30 text-blue-400 border border-blue-800' }}">
-                                    {{ $user->is_admin ? 'Admin' : 'User' }}
+                                @foreach($user->roles as $role)
+                                <span class="px-2 py-1 rounded text-[10px] uppercase font-bold 
+                                        {{ $role->name === 'admin' ? 'bg-red-900/30 text-red-400 border border-red-800' : 
+                                           ($role->name === 'editor' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-800' : 
+                                           'bg-blue-900/30 text-blue-400 border border-blue-800') }}">
+                                    {{ $role->name }}
                                 </span>
+                                @endforeach
                             </td>
                             <td class="text-right">
-                                <form action="{{ route('admin.users.role', $user) }}" method="POST">
+                                <form action="{{ route('admin.users.role', $user) }}" method="POST" class="inline-block">
                                     @csrf @method('PATCH')
-                                    <button class="text-xs font-bold text-gray-500 hover:text-white uppercase transition" {{ auth()->id() === $user->id ? 'disabled opacity-50' : '' }}>
-                                        Toggle Role
-                                    </button>
+                                    <select name="role" onchange="this.form.submit()"
+                                        class="text-xs bg-gray-900 border-gray-700 text-gray-300 rounded focus:ring-red-500 focus:border-red-500"
+                                        {{ auth()->id() === $user->id ? 'disabled' : '' }}>
+                                        <option value="reader" {{ $user->hasRole('reader') ? 'selected' : '' }}>Reader</option>
+                                        <option value="editor" {{ $user->hasRole('editor') ? 'selected' : '' }}>Editor</option>
+                                        <option value="admin" {{ $user->hasRole('admin') ? 'selected' : '' }}>Admin</option>
+                                    </select>
                                 </form>
                             </td>
                         </tr>
