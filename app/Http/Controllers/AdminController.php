@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache; // Required for cache management
 
 class AdminController extends Controller
 {
+    /**
+     * Show the Admin Dashboard
+     */
     public function index()
     {
         // Professional check using Spatie HasRoles trait
@@ -27,12 +31,10 @@ class AdminController extends Controller
      */
     public function updateRole(Request $request, User $user)
     {
-        // Validate the incoming role from the dropdown
         $request->validate([
             'role' => 'required|in:admin,editor,reader'
         ]);
 
-        // Prevent admin from changing their own role
         if (auth()->id() === $user->id) {
             return back()->with('error', 'You cannot change your own role.');
         }
@@ -45,15 +47,20 @@ class AdminController extends Controller
 
     /**
      * Requirement: Blog post moderation (approve, reject, delete)
+     * Updated: Now clears the cache so approved posts show immediately
      */
     public function updateStatus(Post $post, $status)
     {
-        // Allowed statuses based on project requirements
         $allowedStatuses = ['published', 'draft', 'rejected'];
 
         if (in_array($status, $allowedStatuses)) {
             $post->update(['status' => $status]);
-            return back()->with('success', "Post has been {$status}.");
+
+            // 🔥 CRITICAL: Clear the dashboard cache
+            // This ensures the new post appears on the dashboard immediately after approval.
+            Cache::flush();
+
+            return back()->with('success', "Post has been {$status} and dashboard cache updated.");
         }
 
         return back()->with('error', 'Invalid status update.');
