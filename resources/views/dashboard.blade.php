@@ -5,8 +5,9 @@
                 {{ __('Dashboard') }}
             </h2>
 
-            <form action="{{ route('dashboard') }}" method="GET" class="flex-grow max-w-lg w-full">
-                <div class="relative">
+            {{-- UPDATED: Combined Search and Category Filter --}}
+            <form action="{{ route('dashboard') }}" method="GET" class="flex-grow max-w-2xl w-full flex gap-2">
+                <div class="relative flex-grow">
                     <input type="text"
                         name="search"
                         value="{{ request('search') }}"
@@ -19,6 +20,17 @@
                         </svg>
                     </button>
                 </div>
+
+                {{-- NEW: Category Dropdown --}}
+                <select name="category" onchange="this.form.submit()"
+                    class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $category)
+                    <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+                    @endforeach
+                </select>
             </form>
 
             @hasanyrole('admin|editor')
@@ -53,21 +65,21 @@
                     @endif
 
                     <div class="p-6 flex-grow flex flex-col">
-                        {{-- UPDATED: Flex-wrap ensures Category and Tags stay in a neat row --}}
                         <div class="mb-3 flex flex-wrap items-center gap-2">
                             @if($post->category)
-                            <a href="{{ route('categories.show', $post->category->slug) }}" class="inline-block hover:opacity-75 transition">
+                            <a href="{{ route('dashboard', ['category' => $post->category->slug]) }}" class="inline-block hover:opacity-75 transition">
                                 <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                                     {{ $post->category->name }}
                                 </span>
                             </a>
                             @endif
 
-                            {{-- TAGS: Styled as small hashtag badges --}}
                             @foreach($post->tags as $tag)
-                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
-                                #{{ $tag->name }}
-                            </span>
+                            <a href="{{ route('dashboard', ['tag' => $tag->slug]) }}" class="hover:opacity-70 transition">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
+                                    #{{ $tag->name }}
+                                </span>
+                            </a>
                             @endforeach
                         </div>
 
@@ -77,7 +89,6 @@
                             </h3>
                         </a>
 
-                        {{-- UPDATED: strip_tags removes the Trix <div> and <strong> tags from preview --}}
                         <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4 flex-grow">
                             {{ Str::limit(strip_tags($post->content), 100) }}
                         </p>
@@ -93,7 +104,10 @@
                                     </svg>
                                 </div>
                                 @endif
-                                <span class="text-xs font-medium text-gray-900 dark:text-gray-100">{{ $post->user->name }}</span>
+                                {{-- NEW: Clickable Author Link --}}
+                                <a href="{{ route('dashboard', ['author' => $post->user->name]) }}" class="text-xs font-medium text-gray-900 dark:text-gray-100 hover:text-blue-500 transition">
+                                    {{ $post->user->name }}
+                                </a>
                             </div>
 
                             <div class="flex items-center gap-3">
@@ -122,7 +136,6 @@
                                 @endauth
                             </div>
                         </div>
-
                     </div>
                 </div>
                 @endforeach

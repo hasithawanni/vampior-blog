@@ -21,8 +21,7 @@ class SocialAuthController extends Controller
     public function callback($provider)
     {
         try {
-            $socialUser = Socialite::driver($provider)->user();
-
+            $socialUser = Socialite::driver($provider)->stateless()->user();
             // Find user by Email OR Social ID
             $user = User::where('email', $socialUser->getEmail())
                 ->orWhere($provider . '_id', $socialUser->getId())
